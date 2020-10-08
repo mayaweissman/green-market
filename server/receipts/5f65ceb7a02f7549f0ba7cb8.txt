@@ -1,0 +1,17 @@
+
+        Receipt for: Test Testy!
+
+        Payment date: 2020-9-19
+
+        Pay with: 2133
+
+        ------------------------------------
+
+        
+Product name: Feta cheese | Price: 5 $ | Amount: 1 | Total Price: 5 $
+Product name: Lettuce | Price: 1 $ | Amount: 1 | Total Price: 5 $
+Product name: Red pepper | Price: 0.7 $ | Amount: 1 | Total Price: 5 $
+
+        ------------------------------------
+
+        Total price: 15 $

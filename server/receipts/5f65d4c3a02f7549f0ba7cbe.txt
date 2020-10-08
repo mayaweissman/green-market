@@ -1,0 +1,15 @@
+
+        Receipt for: Test Testy!
+
+        Payment date: 2020-9-19
+
+        Pay with: 3333
+
+        ------------------------------------
+
+        
+Product name: Yellow cheese | Price: 6 $ | Amount: 1 | Total Price: 6 $
+
+        ------------------------------------
+
+        Total price: 6 $

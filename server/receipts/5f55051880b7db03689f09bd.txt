@@ -1,0 +1,15 @@
+
+        Receipt for: Taaa Wds!
+
+        Payment date: 2020-9-6
+
+        Pay with: 3333
+
+        ------------------------------------
+
+        
+Product name: Tomato | Price: 0.5 $ | Amount: 1 | Total Price: 0.5 $
+
+        ------------------------------------
+
+        Total price: 0.5 $

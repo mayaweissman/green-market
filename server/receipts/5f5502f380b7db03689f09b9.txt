@@ -1,0 +1,16 @@
+
+        Receipt for: Maya WEdd!
+
+        Payment date: 2020-9-6
+
+        Pay with: 2222
+
+        ------------------------------------
+
+        
+Product name: Feta cheese | Price: 5 $ | Amount: 1 | Total Price: 5 $
+Product name: Lettuce | Price: 1 $ | Amount: 1 | Total Price: 5 $
+
+        ------------------------------------
+
+        Total price: 10 $
