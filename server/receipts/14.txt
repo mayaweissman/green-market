@@ -1,0 +1,14 @@
+
+        Receipt for: undefined undefined!
+
+        Payment date: 2020-11-15
+
+        Pay with: 1223
+
+        ------------------------------------
+
+        
+
+        ------------------------------------
+
+        Total price: 100 $

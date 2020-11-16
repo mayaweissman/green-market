@@ -1,0 +1,15 @@
+
+        Receipt for: Tw Aww!
+
+        Payment date: 2020-11-16
+
+        Pay with: 3454
+
+        ------------------------------------
+
+        
+Product name: undefined | Price: undefined $ | Amount: 1 | Total Price: 1 $
+
+        ------------------------------------
+
+        Total price: 2 $

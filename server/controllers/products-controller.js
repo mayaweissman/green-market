@@ -1,6 +1,6 @@
 const express = require("express");
 const productsLogic = require("../business-logic/products-logic");
-const Product = require("../models/product");
+const Product = require("../models/product-model");
 const { request, response } = require("express");
 const isLoggedIn = require("../middleware/is-logged-in");
 const isAdmin = require("../middleware/is-admin");
@@ -54,10 +54,10 @@ router.get("/search/:text", async (request, response) => {
 
 
 
-router.get("/:_id", async (request, response) => {
+router.get("/:productId", async (request, response) => {
     try {
-        const _id = request.params._id;
-        const product = await productsLogic.getOneProductAsync(_id);
+        const productId = +request.params.productId;
+        const product = await productsLogic.getOneProductAsync(productId);
         if (!product) {
             response.sendStatus(404);
             return;
@@ -71,7 +71,7 @@ router.get("/:_id", async (request, response) => {
 
 router.get("/category/:categoryId", async (request, response) => {
     try {
-        const categoryId = request.params.categoryId;
+        const categoryId = +request.params.categoryId;
         const products = await productsLogic.getProductsByCategoryAsync(categoryId);
         if (!products) {
             response.sendStatus(404);
@@ -86,24 +86,14 @@ router.get("/category/:categoryId", async (request, response) => {
 
 router.post("/add-new", isAdmin, async (request, response) => {
     try {
-        const productToAdd = new Product(JSON.parse(request.body.info));
-        console.log(request.body);
-
-        if(request.files){
+        const productToAdd = request.body;
+        if (request.files) {
             const image = request.files.file;
             const extension = image.name.substr(image.name.lastIndexOf("."));
             const newFileName = uuid.v4() + extension;
             productToAdd.image = newFileName;
             image.mv("./uploads/" + newFileName);
         }
-
-
-        const error = await productToAdd.validate();
-        if (error) {
-            response.status(400).send(error.message);
-            return;
-        }
-
         const addedProduct = await productsLogic.addProductAsync(productToAdd);
         response.status(201).json(addedProduct);
     }
@@ -114,28 +104,19 @@ router.post("/add-new", isAdmin, async (request, response) => {
 
 
 
-router.patch("/:_id", isAdmin, async (request, response) => {
+router.patch("/:productId", isAdmin, async (request, response) => {
     try {
-        const productToUpdate = new Product(JSON.parse(request.body.info));
-        productToUpdate._id = request.params._id;
-
-        if(productToUpdate.image !== "noImageEntered" && request.files){
-            fs.unlink("./uploads/" + productToUpdate.image, (err)=>{
-                if(err){
-                    console.error(err);
-                }
-            })
-        }
-
-        if(request.files){
-            const image = request.files.file;
-            const extension = image.name.substr(image.name.lastIndexOf("."));
+        const productId = +request.params.productId;
+        let fileName = request.body.image;
+        if (request.body.image) {
+            const image = request.body.image;
+            const extension = image.substr(image.lastIndexOf("."));
             const newFileName = uuid.v4() + extension;
-            productToUpdate.image = newFileName;
-            image.mv("./uploads/" + newFileName);
+            fileName = newFileName;
         }
 
-        const updatedProduct = await productsLogic.updateProductAsync(productToUpdate);
+        const product = new Product(productId, request.body.name, request.body.price, fileName, request.body.categoryId);
+        const updatedProduct = await productsLogic.updateProductAsync(product);
         if (!updatedProduct) {
             response.sendStatus(404);
             return;
@@ -147,48 +128,16 @@ router.patch("/:_id", isAdmin, async (request, response) => {
     }
 });
 
-router.delete("/:_id", async (request, response) => {
+router.delete("/:productId", async (request, response) => {
     try {
-        const _id = request.params._id;
-        await productsLogic.deleteProductAsync(_id);
+        const productId = +request.params.productId;
+        await productsLogic.deleteProductAsync(productId);
         response.sendStatus(204);
     }
     catch (err) {
         response.status(500).send(err.message);
     }
 });
-
-
-router.get("/price-range/:minPrice/:maxPrice", async (request, response) => {
-    try {
-        const minPrice = +request.params.minPrice;
-        const maxPrice = +request.params.maxPrice;
-        const products = await productsLogic.getPriceRangeProductsAsync(minPrice, maxPrice);
-        response.json(products);
-    }
-    catch (err) {
-        response.status(500).send(err.message);
-    }
-});
-
-// router.post("/upload-image", isAdmin, async (request, response) => {
-//     try {
-//         console.log("hi");
-//         if (!request.files) {
-//             response.status(400).send("No file send");
-//             return;
-//         }
-//         const image = request.files.adminImage;
-//         image.mv("./uploads/" + uuidFileName);
-
-//         response.end();
-//     }
-//     catch (err) {
-//         response.status(500).send(err.massage);
-//     }
-// });
-
-
 
 
 module.exports = router;

@@ -1,16 +1,17 @@
 const express = require("express");
 const authLogic = require("../business-logic/auth-logic");
-const User = require("../models/user");
+const User = require("../models/user-model");
 const { request, response } = require("express");
 
 const router = express.Router();
+
 
 router.post("/login", async (request, response) => {
     try {
         const credentials = request.body;
         const user = await authLogic.login(credentials);
         if (!user) {
-            response.status(401).send("Wrong username or password");
+            response.status(401).send("Illegal username or password");
             return;
         }
         request.session.user = user;
@@ -21,6 +22,7 @@ router.post("/login", async (request, response) => {
         console.log(err.message);
     }
 });
+
 
 router.post("/logout", (request, response) => {
     try {
@@ -33,17 +35,22 @@ router.post("/logout", (request, response) => {
 });
 
 
+
 router.post("/register", async (request, response) => {
     try {
-        const user = new User(request.body);
-        user.role = "Client";
-        const error = await user.validate();
-        if (error) {
-            response.status(400).send(error.message);
-            return;
-        }
-
+        const user = new User(
+            0,
+            request.body.firstName,
+            request.body.lastName,
+            request.body.email,
+            request.body.idNumber,
+            request.body.password,
+            request.body.city,
+            request.body.address,
+            "Client"); 
         const addedUser = await authLogic.register(user);
+
+
         request.session.user = addedUser;
         response.status(201).json(addedUser);
     }

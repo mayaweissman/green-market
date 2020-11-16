@@ -1,41 +1,63 @@
-const ShoppingCart = require("../models/shopping-cart");
-const ProductInShoppingCart = require("../models/product-in-shopping-cart");
-const Product = require("../models/product");
+const dal = require("../data-access-layer/dal");
 const { response } = require("express");
 
-function openNewShoppingCart(shoppingCartToAdd) {
-    return shoppingCartToAdd.save();
+async function openNewShoppingCart(shoppingCartToAdd) {
+    const sql = `INSERT INTO ShoppingCarts
+    VALUES(DEFAULT, ${shoppingCartToAdd.userId}, '${shoppingCartToAdd.dateOfCreating}')`;
+    const info = await dal.executeAsync(sql);
+    shoppingCartToAdd.shoppingCartId = info.insertId;
+    return shoppingCartToAdd;
 }
 
-function addProductToShoppingCart(ProductToAdd) {
-    return ProductToAdd.save();
+async function addProductToShoppingCart(ProductToAdd) {
+    const sql = `INSERT INTO productInShoppingCart
+    VALUES(DEFAULT, ${ProductToAdd.amount},${ProductToAdd.price}, ${ProductToAdd.productId}, ${ProductToAdd.shoppingCartId})`;
+    const info = await dal.executeAsync(sql);
+    ProductToAdd.shoppingCartId = info.insertId;
+    return ProductToAdd;
 }
 
-function getShoppingCartForUser(userId) {
-    return ShoppingCart.findOne({ "userId": userId }).exec();
-
+async function getShoppingCartForUser(userId) {
+    const sql = `SELECT * FROM ShoppingCarts WHERE userId = ${userId}`;
+    const shoppingCarts = await dal.executeAsync(sql);
+    return shoppingCarts[0];
 }
 
 async function getShoppingCartIncludingProductsAsync(shoppingCartId) {
-    return ProductInShoppingCart.find({ "shoppingCartId": shoppingCartId }).populate("product").exec();
+    const sql = `SELECT productInShoppingCart.* FROM productInShoppingCart JOIN shoppingCarts 
+    ON productinshoppingcart.shoppingCartId = shoppingcarts.shoppingCartId WHERE productinshoppingcart.shoppingCartId =${shoppingCartId}`;
+    const shoppingCarts = await dal.executeAsync(sql);
+    return shoppingCarts;
 }
 
-function deleteProductFromShoppingCartAsync(_id) {
-    return ProductInShoppingCart.deleteOne({ _id }).exec();
+async function deleteProductFromShoppingCartAsync(productInShoppingCartId) {
+    const sql = `DELETE FROM productInShoppingCart WHERE productInShoppingCartId = ${productInShoppingCartId}`;
+    await dal.executeAsync(sql);
 }
 
 async function updateProductInShoppingCart(productToUpdate) {
-    const info = await ProductInShoppingCart.updateOne({ _id: productToUpdate._id }, productToUpdate).exec();
-    return info.n ? productToUpdate : null;
+    let sql = `UPDATE productInShoppingCart SET `;
+    if (productToUpdate.amount !== undefined) {
+        sql += `amount = '${productToUpdate.amount}',`;
+    }
+    if (productToUpdate.price !== undefined) {
+        sql += `price = '${productToUpdate.price}',`;
+    }
+    sql = sql.substr(0, sql.length - 1);
+    sql += ` WHERE productInShoppingCartId  = ${productToUpdate.productInShoppingCartId}`;
+
+    const info = await dal.executeAsync(sql);
+    if (info.affectedRows) {
+        return productToUpdate;
+    }
+
+    return null;
 }
 
 async function deleteAllProductsFromShoppingCart(shoppingCartId) {
-    return ProductInShoppingCart.deleteMany({ "shoppingCartId": shoppingCartId }).exec();
+    const sql = `DELETE FROM productInShoppingCart WHERE shoppingCartId = ${shoppingCartId}`;
+    await dal.executeAsync(sql);
 }
-
-
-
-
 
 module.exports = {
     openNewShoppingCart,

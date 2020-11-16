@@ -1,7 +1,11 @@
-const City = require("../models/city");
+const { request } = require("express");
 
-function getAllCitiesAsync() {
-    return City.find().exec();
+const dal = require("../data-access-layer/dal");
+
+async function getAllCitiesAsync() {
+    const sql = `SELECT * FROM Cities`;
+    const cities = await dal.executeAsync(sql);
+    return cities;
 }
 
 module.exports = {

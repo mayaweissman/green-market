@@ -1,0 +1,19 @@
+
+        Receipt for: Maya Weissman!
+
+        Payment date: 2020-11-13
+
+        Pay with: 2341
+
+        ------------------------------------
+
+        
+Product name: milk | Price: 1 $ | Amount: 4 | Total Price: 4 $
+Product name: Tomato | Price: 0.5 $ | Amount: 1 | Total Price: 0.5 $
+Product name: Feta cheese | Price: 5 $ | Amount: 1 | Total Price: 5 $
+Product name: Cucumber | Price: 0.5 $ | Amount: 1 | Total Price: 1 $
+Product name: Lettuce | Price: 1 $ | Amount: 1 | Total Price: 1 $
+
+        ------------------------------------
+
+        Total price: 11.5 $

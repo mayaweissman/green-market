@@ -1,30 +1,30 @@
-const mongoose = require("mongoose");
+// Accessing the database.
 
-function connectAsync() {
+const mysql = require("mysql");
+
+// Creating a connection:
+const connection = mysql.createPool({
+    host: config.mysql.host,
+    user: config.mysql.user,
+    password: config.mysql.password,
+    database: config.mysql.database
+});
+
+console.log(`We're Connected to ${config.mysql.database} Database on MySQL.`);
+
+// Execute sql:
+function executeAsync(sql, values) {
     return new Promise((resolve, reject) => {
-
-        //Config
-        const connStr = `mongodb://${config.mongodb.host}:${config.mongodb.port}/${config.mongodb.database}`;
-        const options = { useNewUrlParser: true, useUnifiedTopology: true };
-
-        //Connect
-        mongoose.connect(connStr, options, (err, db) => {
+        connection.query(sql, values, (err, result) => {
             if (err) {
                 reject(err);
                 return;
             }
-            resolve(db);
+            resolve(result);
         });
-
     });
 }
 
-(async () => {
-    try {
-        const db = await connectAsync();
-        console.log(`Connected to ${db.name}`);
-    }
-    catch (err) {
-        console.error(err);
-    }
-})();
+module.exports = {
+    executeAsync
+};

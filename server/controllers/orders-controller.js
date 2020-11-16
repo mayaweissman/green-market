@@ -1,20 +1,20 @@
-
 const express = require("express");
 const ordersLogic = require("../business-logic/orders-logic");
-const shoppingCartLogic = require("../business-logic/shopping-carts-logic");
-const Order = require("../models/order");
+const productsLogic = require("../business-logic/products-logic");
+const authLogic = require("../business-logic/auth-logic");
+const Order = require("../models/order-model");
 const { request, response } = require("express");
 const shoppingCartsLogic = require("../business-logic/shopping-carts-logic");
 const fs = require("fs");
 const { FORMERR } = require("dns");
+const { get } = require("http");
 
 const router = express.Router();
 
 
-
 router.post("/", async (request, response) => {
     try {
-        const order = new Order(request.body);
+        const order = request.body;
 
         const creditCardNumber = order.FourDigitOfCreditCart.toString();
         let lastFourDigits = "";
@@ -25,19 +25,17 @@ router.post("/", async (request, response) => {
         order.FourDigitOfCreditCart = +lastFourDigits;
         order.dateOfCreating = new Date().toLocaleDateString();
 
-
         const newOrder = await ordersLogic.createNewOrder(order);
-
-        const shoppingCart = newOrder.shoppingCart;
-        const user = newOrder.user;
-        const products = await shoppingCartsLogic.getShoppingCartIncludingProductsAsync(shoppingCart._id);
+        const shoppingCart = await shoppingCartsLogic.getShoppingCartForUser(newOrder.userId);
+        const user = await authLogic.getOneUser(newOrder.userId);
+        const products = await shoppingCartsLogic.getShoppingCartIncludingProductsAsync(shoppingCart.shoppingCartId);
 
         let productsText = ``;
         for (const p of products) {
-            productsText += `\r\nProduct name: ${p.product.name} | Price: ${p.product.price} $ | Amount: ${p.amount} | Total Price: ${p.price} $`
+            productsText += `\r\nProduct name: ${getProductByProductId(p.productId).name} | Price: ${getProductByProductId(p.productId).price} $ | Amount: ${p.amount} | Total Price: ${p.price} $`
         };
-        fs.writeFileSync(`./receipts/${newOrder._id}.txt`, `
-        Receipt for: ${user.firstName} ${user.lastName}!\r\n
+        fs.writeFileSync(`./receipts/${newOrder.orderId}.txt`, `
+        Receipt for: ${user.firstname} ${user.lastname}!\r\n
         Payment date: ${newOrder.dateOfCreating}\r\n
         Pay with: ${newOrder.FourDigitOfCreditCart}\r\n
         ------------------------------------\r\n
@@ -52,9 +50,15 @@ router.post("/", async (request, response) => {
     }
 });
 
+const getProductByProductId = async (productId) => {
+    const product = await productsLogic.getOneProductAsync(productId);
+    return product;
+}
+
+
 router.get("/download/:orderId", async (request, response) => {
     try {
-        const orderId = request.params.orderId;
+        const orderId = +request.params.orderId;
         const file = `./receipts/${orderId}.txt`;
         response.download(file);
     }
@@ -66,11 +70,7 @@ router.get("/download/:orderId", async (request, response) => {
 
 router.get("/shipping-date", async (request, response) => {
     try {
-        const shippingDates = [];
-        const orders = await ordersLogic.getAllShippingDates();
-        for (const o of orders) {
-            shippingDates.push(o.dateOfShipping);
-        }
+        const shippingDates = await ordersLogic.getAllShippingDates();
         response.json(shippingDates);
     }
     catch (err) {
@@ -100,10 +100,11 @@ router.get("/", async (request, response) => {
     }
 });
 
-router.get("/:_id", async (request, response) => {
+router.get("/:orderId", async (request, response) => {
     try {
-        const _id = request.params._id;
-        const order = await ordersLogic.getOrderIncludingUserIdIncludingShoppingCart(_id);
+        const orderId = +request.params.orderId;
+        const orderDetails = await ordersLogic.getOneOrder(orderId);
+        const order = await ordersLogic.getOrderIncludingUserIdIncludingShoppingCart(orderDetails);
         response.json(order);
     }
     catch (err) {
@@ -113,7 +114,7 @@ router.get("/:_id", async (request, response) => {
 
 router.get("/orders-for-user/:userId", async (request, response) => {
     try {
-        const userId = request.params.userId;
+        const userId = +request.params.userId;
         const orders = await ordersLogic.getAllOrdersForUser(userId);
         response.json(orders);
     }
@@ -124,6 +125,6 @@ router.get("/orders-for-user/:userId", async (request, response) => {
 
 
 
-
 module.exports = router;
+
 

@@ -1,0 +1,4 @@
+{
+    "appService.defaultWebAppToDeploy": "/subscriptions/c081f1e2-b0bc-43c1-899d-4aba085b1c8c/resourceGroups/green-market/providers/Microsoft.Web/sites/green-market",
+    "appService.deploySubpath": "."
+}

@@ -1,7 +1,7 @@
 const express = require("express");
 const shoppingCartsLogic = require("../business-logic/shopping-carts-logic");
-const ShoppingCart = require("../models/shopping-cart");
-const ProductInShoppingCart = require("../models/product-in-shopping-cart");
+const ShoppingCart = require("../models/shopping-cart-model");
+const ProductInShoppingCart = require("../models/product-in-shopping-cart-model");
 const { request, response } = require("express");
 const isLoggedIn = require("../middleware/is-logged-in");
 
@@ -10,7 +10,7 @@ const router = express.Router();
 
 router.get("/products/:shoppingCartId", async (request, response) => {
     try {
-        const shoppingCartId = request.params.shoppingCartId;
+        const shoppingCartId = +request.params.shoppingCartId;
         const products = await shoppingCartsLogic.getShoppingCartIncludingProductsAsync(shoppingCartId);
         if (!products) {
             response.sendStatus(404);
@@ -27,7 +27,7 @@ router.get("/products/:shoppingCartId", async (request, response) => {
 
 router.get("/cart/:userId", async (request, response) => {
     try {
-        const userId = request.params.userId;
+        const userId = +request.params.userId;
         const shoppingCart = await shoppingCartsLogic.getShoppingCartForUser(userId);
         if (!shoppingCart) {
             response.json("No shopping cart for user");
@@ -43,10 +43,10 @@ router.get("/cart/:userId", async (request, response) => {
 
 router.post("/new", async (request, response) => {
     try {
-        const shoppingCart = new ShoppingCart(request.body);
+        const shoppingCart = request.body;
         shoppingCart.dateOfCreating = new Date().toLocaleDateString();
-        const newShoppingCart = await shoppingCartsLogic.openNewShoppingCart(shoppingCart);
-        response.status(201).json(newShoppingCart);
+        const addedShoppingCart = await shoppingCartsLogic.openNewShoppingCart(shoppingCart);
+        response.status(201).json(addedShoppingCart);
     }
     catch (err) {
         response.status(500).send(err.message);
@@ -55,7 +55,7 @@ router.post("/new", async (request, response) => {
 
 router.post("/add-product", async (request, response) => {
     try {
-        const productInShoppingCart = new ProductInShoppingCart(request.body);
+        const productInShoppingCart = request.body;
         const addedProductInShoppingCart = await shoppingCartsLogic.addProductToShoppingCart(productInShoppingCart);
         response.status(201).json(addedProductInShoppingCart);
     }
@@ -65,10 +65,10 @@ router.post("/add-product", async (request, response) => {
 });
 
 
-router.delete("/:_id", async (request, response) => {
+router.delete("/:id", async (request, response) => {
     try {
-        const _id = request.params._id;
-        await shoppingCartsLogic.deleteProductFromShoppingCartAsync(_id);
+        const id = +request.params.id;
+        await shoppingCartsLogic.deleteProductFromShoppingCartAsync(id);
         response.sendStatus(204);
     }
     catch (err) {
@@ -78,7 +78,7 @@ router.delete("/:_id", async (request, response) => {
 
 router.delete("/delete-all/:shoppingCartId", async (request, response) => {
     try {
-        const shoppingCartId = request.params.shoppingCartId;
+        const shoppingCartId = +request.params.shoppingCartId;
         await shoppingCartsLogic.deleteAllProductsFromShoppingCart(shoppingCartId);
         response.sendStatus(204);
     }
@@ -87,12 +87,11 @@ router.delete("/delete-all/:shoppingCartId", async (request, response) => {
     }
 })
 
-router.patch("/:_id", async (request, response) => {
+router.patch("/:productId", async (request, response) => {
     try {
-        const productToUpdate = new ProductInShoppingCart(request.body);
-        productToUpdate._id = request.params._id;
-
-        const updatedProduct = await shoppingCartsLogic.updateProductInShoppingCart(productToUpdate);
+        const productId = +request.params.productId;
+        const product = new ProductInShoppingCart(productId, request.body.amount, request.body.price);
+        const updatedProduct = await shoppingCartsLogic.updateProductInShoppingCart(product);
         if (!updatedProduct) {
             response.sendStatus(404);
             return;
